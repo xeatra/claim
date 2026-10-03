@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Partner Claims · POC v1</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --blue-950:#0A1628;--blue-900:#0D2144;--blue-800:#1B3A6B;--blue-600:#2563EB;--blue-500:#3B82F6;--blue-100:#DBEAFE;--blue-50:#EFF6FF;
+  --slate-50:#F8FAFC;--slate-100:#F1F5F9;--slate-200:#E2E8F0;--slate-300:#CBD5E1;--slate-400:#94A3B8;--slate-500:#64748B;--slate-600:#475569;--slate-700:#334155;--slate-800:#1E293B;--slate-900:#0F172A;
+  --green-500:#22C55E;--green-100:#DCFCE7;--green-700:#15803D;--amber-500:#F59E0B;--amber-100:#FEF3C7;--amber-700:#B45309;
+  --red-500:#EF4444;--red-100:#FEE2E2;--red-700:#B91C1C;--purple-100:#F3E8FF;--purple-700:#7E22CE;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--slate-100);color:var(--slate-800);font-size:14px;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;}
+.mono{font-family:'DM Mono',monospace;}
+
+/* ── Top switch ── */
+.switchbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--blue-950);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:200;}
+.switchbar .brand{display:flex;align-items:center;gap:10px;color:#fff;}
+.brand-mark{width:32px;height:32px;background:var(--blue-600);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;}
+.brand-name{font-weight:700;font-size:14px;}
+.brand-sub{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.5px;}
+.seg{display:flex;background:rgba(255,255,255,.08);border-radius:10px;padding:3px;}
+.seg button{border:0;background:transparent;color:rgba(255,255,255,.6);padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;}
+.seg button.on{background:#fff;color:var(--blue-950);}
+.poc-tag{font-size:11px;color:rgba(255,255,255,.5);}
+
+/* ── Generic ── */
+.btn{border:1px solid transparent;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--blue-600);color:#fff;}
+.btn-primary:hover{background:#1D4ED8;}
+.btn-secondary{background:#fff;color:var(--slate-700);border-color:var(--slate-200);}
+.btn-success{background:var(--green-500);color:#fff;}
+.btn-danger{background:#fff;color:var(--red-700);border-color:var(--red-100);}
+.btn-ghost{background:transparent;color:var(--slate-600);}
+.btn-sm{padding:6px 11px;font-size:12px;}
+.btn-xs{padding:4px 9px;font-size:11px;}
+.btn[disabled]{opacity:.45;cursor:not-allowed;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
+.b-blue{background:var(--blue-100);color:var(--blue-800);}
+.b-green{background:var(--green-100);color:var(--green-700);}
+.b-amber{background:var(--amber-100);color:var(--amber-700);}
+.b-red{background:var(--red-100);color:var(--red-700);}
+.b-slate{background:var(--slate-100);color:var(--slate-600);}
+.b-purple{background:var(--purple-100);color:var(--purple-700);}
+.card{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:16px;}
+.card-title{font-size:13px;font-weight:700;color:var(--slate-800);}
+.card-sub{font-size:11px;color:var(--slate-400);}
+.info-row{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--slate-100);font-size:12px;}
+.info-row:last-child{border-bottom:0;}
+.info-label{color:var(--slate-400);}
+.info-val{color:var(--slate-800);font-weight:500;text-align:right;}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--slate-900);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;opacity:0;transition:all .25s;z-index:999;max-width:90vw;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ══════════ MOBILE VIEW ══════════ */
+#view-mobile{padding:76px 24px 30px;display:flex;justify-content:center;gap:34px;align-items:flex-start;}
+.phone{width:390px;height:800px;background:#0b0f18;border-radius:46px;padding:12px;box-shadow:0 30px 60px rgba(10,22,40,.25);flex-shrink:0;position:relative;}
+.screen-m{width:100%;height:100%;background:var(--slate-50);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative;}
+.m-status{height:34px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:12px;font-weight:600;color:#fff;background:var(--blue-950);flex-shrink:0;}
+.m-head{background:var(--blue-950);color:#fff;padding:6px 18px 14px;flex-shrink:0;}
+.m-head h2{font-size:18px;font-weight:700;}
+.m-head .sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px;}
+.m-head .row{display:flex;align-items:center;justify-content:space-between;}
+.m-back{background:rgba(255,255,255,.1);border:0;color:#fff;width:32px;height:32px;border-radius:9px;font-size:16px;}
+.m-body{flex:1;overflow-y:auto;padding:14px 14px 90px;}
+.m-foot{position:absolute;bottom:0;left:0;right:0;padding:12px 14px 18px;background:#fff;border-top:1px solid var(--slate-200);display:flex;gap:8px;}
+.m-foot .btn{flex:1;justify-content:center;padding:12px;font-size:14px;border-radius:12px;}
+.m-steps{display:flex;gap:4px;margin-top:12px;}
+.m-steps span{flex:1;height:4px;border-radius:3px;background:rgba(255,255,255,.18);}
+.m-steps span.done{background:var(--green-500);}
+.m-steps span.cur{background:#fff;}
+.m-card{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:14px;margin-bottom:10px;}
+.m-card h4{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--slate-400);margin-bottom:10px;font-weight:700;}
+.f{margin-bottom:10px;}
+.f label{display:block;font-size:11px;color:var(--slate-500);font-weight:600;margin-bottom:4px;}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--slate-200);border-radius:10px;padding:10px 11px;font-size:14px;background:#fff;color:var(--slate-800);}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--blue-500);box-shadow:0 0 0 3px var(--blue-100);}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{border:1px solid var(--slate-200);background:#fff;border-radius:20px;padding:7px 12px;font-size:12px;font-weight:600;color:var(--slate-600);}
+.chip.on{background:var(--blue-600);border-color:var(--blue-600);color:#fff;}
+.chip.red.on{background:var(--red-500);border-color:var(--red-500);}
+.m-claim{background:#fff;border:1px solid var(--slate-200);border-radius:14px;padding:12px 14px;margin-bottom:9px;display:flex;justify-content:space-between;gap:10px;}
+.m-claim .t{font-weight:700;font-size:14px;}
+.m-claim .s{font-size:12px;color:var(--slate-500);margin-top:2px;}
+.m-fab{width:100%;padding:14px;border:0;border-radius:14px;background:var(--blue-600);color:#fff;font-size:15px;font-weight:700;margin-bottom:14px;box-shadow:0 8px 18px rgba(37,99,235,.25);}
+.m-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.m-kpi{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:10px;text-align:center;}
+.m-kpi b{display:block;font-size:20px;}
+.m-kpi span{font-size:10px;color:var(--slate-500);text-transform:uppercase;letter-spacing:.4px;}
+.ph-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ph-tile{border:1.5px dashed var(--slate-300);border-radius:12px;padding:10px;background:#fff;position:relative;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;}
+.ph-tile.ok{border-style:solid;border-color:var(--green-500);}
+.ph-tile .nm{font-size:12px;font-weight:700;}
+.ph-tile .rq{font-size:10px;color:var(--red-700);font-weight:600;}
+.ph-tile .ct{font-size:10px;color:var(--green-700);font-weight:700;}
+.ph-thumbs{display:flex;gap:4px;margin:6px 0;flex-wrap:wrap;}
+.ph-thumbs img{width:34px;height:34px;object-fit:cover;border-radius:6px;border:1px solid var(--slate-200);}
+.ph-add{display:flex;gap:6px;}
+.ph-add label,.ph-add button{flex:1;text-align:center;font-size:11px;font-weight:700;padding:6px 4px;border-radius:8px;background:var(--blue-50);color:var(--blue-600);border:1px solid var(--blue-100);cursor:pointer;}
+.moto-wrap{background:var(--slate-50);border:1px solid var(--slate-200);border-radius:12px;padding:6px;}
+.moto-wrap svg{width:100%;height:auto;display:block;}
+.zone{fill:#E2E8F0;stroke:#94A3B8;stroke-width:1.5;cursor:pointer;transition:fill .15s;}
+.zone:hover{fill:#BFDBFE;}
+.zone.hit{fill:#FCA5A5;stroke:#B91C1C;}
+.zone.sel{stroke:#2563EB;stroke-width:3;}
+.dmg-list .it{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--slate-100);font-size:13px;}
+.sig{width:100%;height:150px;border:1.5px dashed var(--slate-300);border-radius:12px;background:#fff;touch-action:none;}
+.sum-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid var(--slate-100);}
+.sum-row span:first-child{color:var(--slate-500);}
+.sum-row span:last-child{font-weight:600;text-align:right;}
+.sending{position:absolute;inset:0;background:rgba(10,22,40,.85);display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:14px;z-index:20;}
+.sending.show{display:flex;}
+.spinner{width:42px;height:42px;border:4px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.okbig{width:76px;height:76px;border-radius:50%;background:var(--green-100);color:var(--green-700);display:flex;align-items:center;justify-content:center;font-size:38px;margin:30px auto 14px;}
+
+.side-notes{width:400px;display:flex;flex-direction:column;gap:12px;}
+.side-notes h3{font-size:18px;color:var(--slate-900);}
+.side-notes p{font-size:13px;color:var(--slate-600);line-height:1.55;}
+.flow{display:flex;flex-direction:column;gap:8px;}
+.flow .st{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--slate-200);border-radius:10px;padding:10px 12px;}
+.flow .st .n{width:24px;height:24px;border-radius:50%;background:var(--blue-800);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.flow .st.on{border-color:var(--blue-500);box-shadow:0 0 0 3px var(--blue-100);}
+.flow .st b{font-size:13px;display:block;}
+.flow .st span{font-size:12px;color:var(--slate-500);}
+
+/* ══════════ SALES PARTNER VIEW ══════════ */
+#view-sp{display:none;padding-top:52px;}
+.sp-side{position:fixed;top:52px;left:0;bottom:0;width:224px;background:var(--blue-950);padding:14px 0;overflow-y:auto;}
+.sp-sec{padding:14px 18px 5px;font-size:9.5px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:1px;text-transform:uppercase;}
+.sp-item{display:flex;align-items:center;gap:10px;padding:8px 12px;margin:1px 8px;border-radius:8px;color:rgba(255,255,255,.55);font-size:13px;font-weight:500;cursor:pointer;}
+.sp-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+.sp-item.on{background:var(--blue-600);color:#fff;}
+.sp-item.dim{opacity:.4;cursor:default;}
+.sp-item .nb{margin-left:auto;background:var(--red-500);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px;}
+.sp-main{margin-left:224px;padding:20px 24px 40px;}
+.sp-screen{display:none;}
+.sp-screen.on{display:block;}
+.page-h{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:12px;}
+.page-t{font-size:20px;font-weight:700;color:var(--slate-900);}
+.page-s{font-size:13px;color:var(--slate-400);margin-top:3px;}
+.crumb{font-size:12px;color:var(--slate-400);margin-bottom:4px;}
+.crumb a{color:var(--blue-600);cursor:pointer;}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+.metric{background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;}
+.metric::after{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--blue-600);}
+.metric.g::after{background:var(--green-500);}
+.metric.a::after{background:var(--amber-500);}
+.metric.r::after{background:var(--red-500);}
+.metric .l{font-size:11px;color:var(--slate-400);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+.metric .v{font-size:24px;font-weight:700;margin-top:4px;}
+.metric .s{font-size:11px;color:var(--slate-500);margin-top:2px;}
+table{width:100%;border-collapse:collapse;}
+th{background:#FEFCE8;font-size:11px;font-weight:700;color:var(--slate-700);text-align:left;padding:10px 12px;border-bottom:1px solid var(--slate-200);white-space:nowrap;}
+td{padding:10px 12px;border-bottom:1px solid var(--slate-100);font-size:12.5px;vertical-align:middle;}
+tr.click{cursor:pointer;}
+tr.click:hover td{background:var(--slate-50);}
+.tbl{background:#fff;border:1px solid var(--slate-200);border-radius:12px;overflow:hidden;}
+.tbl-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--slate-100);}
+.idlink{color:var(--blue-600);font-weight:700;font-family:'DM Mono',monospace;font-size:12px;}
+.grid-d{display:grid;grid-template-columns:310px 1fr;gap:18px;align-items:start;}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--slate-200);margin-bottom:16px;}
+.tab{padding:9px 14px;font-size:13px;font-weight:600;color:var(--slate-400);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;}
+.tab.on{color:var(--blue-600);border-bottom-color:var(--blue-600);}
+.pane{display:none;}
+.pane.on{display:block;}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+.gal figure{background:#fff;border:1px solid var(--slate-200);border-radius:10px;overflow:hidden;}
+.gal img{width:100%;height:96px;object-fit:cover;display:block;}
+.gal figcaption{font-size:11px;padding:6px 8px;color:var(--slate-600);font-weight:600;}
+.pipe{display:flex;background:#fff;border:1px solid var(--slate-200);border-radius:12px;padding:14px 10px;margin-bottom:16px;overflow-x:auto;}
+.pipe .p{flex:1;min-width:92px;text-align:center;position:relative;}
+.pipe .p .c{width:26px;height:26px;border-radius:50%;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:var(--slate-100);color:var(--slate-400);border:2px solid var(--slate-200);position:relative;z-index:1;}
+.pipe .p.done .c{background:var(--green-100);color:var(--green-700);border-color:var(--green-500);}
+.pipe .p.cur .c{background:var(--blue-600);color:#fff;border-color:var(--blue-600);}
+.pipe .p .tx{font-size:10.5px;color:var(--slate-500);font-weight:600;line-height:1.25;}
+.pipe .p.cur .tx{color:var(--blue-800);}
+.pipe .p:not(:last-child)::after{content:'';position:absolute;top:13px;left:calc(50% + 14px);right:calc(-50% + 14px);height:2px;background:var(--slate-200);}
+.pipe .p.done:not(:last-child)::after{background:var(--green-500);}
+.tl{position:relative;padding-left:20px;}
+.tl::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;width:2px;background:var(--slate-200);}
+.tl .i{position:relative;margin-bottom:12px;}
+.tl .i::before{content:'';position:absolute;left:-18px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--blue-600);border:2px solid #fff;box-shadow:0 0 0 1px var(--blue-600);}
+.tl .i b{font-size:12.5px;display:block;}
+.tl .i span{font-size:11px;color:var(--slate-400);}
+.mail{border:1px solid var(--slate-200);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff;}
+.mail .hd{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px;}
+.mail .sb{font-weight:700;font-size:13px;}
+.mail .meta{font-size:11px;color:var(--slate-400);}
+.mail .bd{font-size:12px;color:var(--slate-600);line-height:1.5;white-space:pre-line;}
+.att{display:inline-flex;align-items:center;gap:4px;background:var(--slate-100);border-radius:6px;padding:3px 7px;font-size:11px;margin:4px 4px 0 0;color:var(--slate-600);}
+.compose .f input,.compose .f select,.compose .f textarea{font-size:13px;padding:8px 10px;border-radius:8px;}
+.modal-bg{position:fixed;inset:0;background:rgba(10,22,40,.55);display:none;align-items:center;justify-content:center;z-index:300;}
+.modal-bg.show{display:flex;}
+.modal{background:#fff;border-radius:14px;width:520px;max-width:94vw;overflow:hidden;}
+.modal-h{background:var(--blue-950);color:#fff;padding:14px 18px;font-weight:700;display:flex;justify-content:space-between;}
+.modal-h button{background:0;border:0;color:#fff;font-size:18px;}
+.modal-b{padding:18px;}
+.modal-f{padding:12px 18px;border-top:1px solid var(--slate-100);display:flex;justify-content:flex-end;gap:8px;}
+.code{background:var(--slate-900);color:#E2E8F0;border-radius:10px;padding:14px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.55;white-space:pre;overflow-x:auto;}
+.note{background:var(--blue-50);border:1px solid var(--blue-100);color:var(--blue-800);border-radius:9px;padding:10px 14px;font-size:12px;line-height:1.5;margin-bottom:14px;}
+.warn{color:var(--red-700);font-weight:700;}
+</style>
+</head>
+<body>
+
+<!-- ═════════ TOP SWITCH ═════════ -->
+<div class="switchbar">
+  <div class="brand">
+    <div class="brand-mark">SP</div>
+    <div><div class="brand-name">Sales Partner Claims</div><div class="brand-sub">Pre-dosare daune · POC v1</div></div>
+  </div>
+  <div class="seg">
+    <button id="sw-m" class="on" onclick="showView('mobile')">📱 Aplicatie mobila (receptioner)</button>
+    <button id="sw-s" onclick="showView('sp')">🖥 Sales Partner DMS (modul)</button>
+  </div>
+  <div class="poc-tag">Date demonstrative · fara date reale</div>
+</div>
+
+<!-- ═════════ MOBILE VIEW ═════════ -->
+<div id="view-mobile">
+  <div class="phone">
+    <div class="screen-m">
+      <div class="m-status"><span>09:41</span><span>●●● 5G ▮</span></div>
+      <div class="m-head" id="m-head"></div>
+      <div class="m-body" id="m-body"></div>
+      <div class="m-foot" id="m-foot"></div>
+      <div class="sending" id="sending"><div class="spinner"></div><div style="font-weight:600;">Se trimite in Sales Partner…</div><div style="font-size:12px;opacity:.6;" class="mono">POST /api/v1/pre-claims</div></div>
+    </div>
+  </div>
+  <div class="side-notes">
+    <h3>Aplicatie mobila — pre-dosar de dauna</h3>
+    <p>Receptionerul merge cu clientul la vehicul, completeaza datele de baza, face pozele si preia declaratia clientului. La final pre-dosarul se trimite prin API in Sales Partner, exact ca un lead. In Sales Partner, din pre-dosar se creeaza comanda de lucru (tip Asigurare) cu dosarul de dauna atasat.</p>
+    <div class="flow" id="flow">
+      <div class="st" data-s="1"><div class="n">1</div><div><b>Client &amp; vehicul</b><span>Cautare in Sales Partner dupa nr. auto / VIN sau scanare talon</span></div></div>
+      <div class="st" data-s="2"><div class="n">2</div><div><b>Dosar asigurare</b><span>Asigurator, RCA / CASCO, nr. dosar, polita, eveniment, parte vinovata</span></div></div>
+      <div class="st" data-s="3"><div class="n">3</div><div><b>Constatare</b><span>Avarii marcate pe schita, km, combustibil, deplasare pe roti</span></div></div>
+      <div class="st" data-s="4"><div class="n">4</div><div><b>Poze</b><span>Categorii fixe: VIN, bord, 4 laturi, avarii, documente</span></div></div>
+      <div class="st" data-s="5"><div class="n">5</div><div><b>Declaratia clientului</b><span>Text sau dictare</span></div></div>
+      <div class="st" data-s="6"><div class="n">6</div><div><b>Semnatura &amp; trimitere</b><span>Semnatura clientului, trimitere prin API catre Sales Partner</span></div></div>
+    </div>
+    <div class="card" style="font-size:12px;color:var(--slate-600);line-height:1.6;">
+      <b style="color:var(--slate-800);">Licentiere separata.</b> Aplicatia ruleaza exclusiv pe mobil (telefon / tableta) si se licentiaza separat, per dispozitiv / utilizator. Modulul de primire din Sales Partner preia pre-dosarele si le transforma in comenzi.
+      <br><b style="color:var(--slate-800);">Fara integrare cu asiguratorii.</b> Corespondenta cu asiguratorul se trimite din Sales Partner, nu din aplicatie, pentru a fi urmarita pe dosar.
+    </div>
+  </div>
+</div>
+
+<!-- ═════════ SALES PARTNER VIEW ═════════ -->
+<div id="view-sp">
+  <div class="sp-side">
+    <div class="sp-sec">Service</div>
+    <div class="sp-item dim">⊞ Dashboard</div>
+    <div class="sp-item dim">⇄ Parteneri</div>
+    <div class="sp-item dim">▤ Comenzi service</div>
+    <div class="sp-sec">Daune</div>
+    <div class="sp-item on" data-k="inbox" onclick="spNav('inbox')">📥 Pre-dosare (mobil) <span class="nb" id="nb-new">0</span></div>
+    <div class="sp-item" data-k="claims" onclick="spNav('claims')">📁 Dosare de dauna</div>
+    <div class="sp-sec">Administrare</div>
+    <div class="sp-item" data-k="settings" onclick="spNav('settings')">⚙ Aplicatie mobila &amp; API</div>
+    <div class="sp-item dim">▦ Stoc</div>
+    <div class="sp-item dim">€ Financiar</div>
+  </div>
+  <div class="sp-main">
+    <!-- INBOX -->
+    <div class="sp-screen on" id="sp-inbox">
+      <div class="page-h"><div><div class="crumb">Service / Daune</div><div class="page-t">Pre-dosare primite din aplicatia mobila</div><div class="page-s">Primite prin API · se transforma in comanda de lucru tip Asigurare cu dosar atasat</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="showView('mobile')">📱 Deschide aplicatia mobila</button></div>
+      <div class="metrics" id="in-metrics"></div>
+      <div class="tbl"><div class="tbl-h"><div class="card-title">Pre-dosare</div><div style="display:flex;gap:8px;">
+        <select class="btn btn-secondary btn-sm" id="in-filter" onchange="renderInbox()"><option value="">Toate statusurile</option><option>Nou</option><option>Comanda creata</option><option>Respins</option></select></div></div>
+        <table><thead><tr><th>Pre-dosar</th><th>Primit</th><th>Receptioner</th><th>Client</th><th>Nr. auto</th><th>Vehicul</th><th>Asigurator</th><th>Tip</th><th>Nr. dosar dauna</th><th>Poze</th><th>Status</th><th></th></tr></thead><tbody id="in-rows"></tbody></table></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div class="sp-screen" id="sp-detail"></div>
+
+    <!-- CLAIMS -->
+    <div class="sp-screen" id="sp-claims">
+      <div class="page-h"><div><div class="crumb">Service / Daune</div><div class="page-t">Dosare de dauna</div><div class="page-s">Urmarire status pe fiecare dosar · termene configurabile per asigurator</div></div></div>
+      <div class="metrics" id="cl-metrics"></div>
+      <div class="tbl"><table><thead><tr><th>Dosar</th><th>Comanda</th><th>Client</th><th>Nr. auto</th><th>Asigurator</th><th>Tip</th><th>Status dosar</th><th>In status de</th><th>Ultimul email</th><th>Termen</th></tr></thead><tbody id="cl-rows"></tbody></table></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="sp-screen" id="sp-settings">
+      <div class="page-h"><div><div class="crumb">Administrare</div><div class="page-t">Aplicatie mobila &amp; API</div><div class="page-s">Licente, dispozitive, asiguratori si structura API pentru pre-dosare</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div class="card" style="margin-bottom:16px;"><div class="card-title" style="margin-bottom:10px;">Licenta Sales Partner Claims (mobil)</div>
+            <div class="info-row"><span class="info-label">Tip licenta</span><span class="info-val">Modul separat · per dispozitiv</span></div>
+            <div class="info-row"><span class="info-label">Dispozitive active</span><span class="info-val">2 / 3</span></div>
+            <div class="info-row"><span class="info-label">Punct de lucru</span><span class="info-val">Service · Locatia 1</span></div>
+            <div class="info-row"><span class="info-label">Stocare poze</span><span class="info-val">Cloud Sales Partner</span></div></div>
+          <div class="tbl" style="margin-bottom:16px;"><div class="tbl-h"><div class="card-title">Dispozitive</div><button class="btn btn-primary btn-xs" onclick="toast('Cod de activare generat: 482-913')">+ Activeaza dispozitiv</button></div>
+            <table><thead><tr><th>Dispozitiv</th><th>Utilizator</th><th>Ultima sincronizare</th><th>Status</th></tr></thead><tbody>
+            <tr><td>Tableta receptie</td><td>Receptioner 1</td><td class="mono">03.10.2026 09:41</td><td><span class="badge b-green">Activ</span></td></tr>
+            <tr><td>Telefon service</td><td>Receptioner 2</td><td class="mono">02.10.2026 17:12</td><td><span class="badge b-green">Activ</span></td></tr>
+            </tbody></table></div>
+          <div class="tbl"><div class="tbl-h"><div class="card-title">Asiguratori · adrese email &amp; termene</div></div>
+            <table><thead><tr><th>Asigurator</th><th>Email daune (configurat)</th><th>Accept plata</th><th>Plata</th></tr></thead><tbody id="ins-rows"></tbody></table></div>
+        </div>
+        <div>
+          <div class="note">Fluxul este identic cu cel al lead-urilor: aplicatia mobila trimite un <b>pre-dosar</b> prin API, iar Sales Partner il afiseaza in lista de pre-dosare. Pozele se incarca separat (multipart) si se ataseaza pre-dosarului.</div>
+          <div class="card"><div class="card-title" style="margin-bottom:10px;">POST /api/v1/pre-claims</div><div class="code" id="api-sample"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: create work order -->
+<div class="modal-bg" id="modal-wo"><div class="modal">
+  <div class="modal-h"><span>Creeaza comanda de lucru din pre-dosar</span><button onclick="closeModal('modal-wo')">×</button></div>
+  <div class="modal-b compose">
+    <div class="note" style="margin-bottom:12px;">Se creeaza o comanda de lucru tip <b>Asigurare</b>. Datele clientului, vehiculului, asiguratorului si dosarului se preiau automat; pozele, constatarea si declaratia clientului se ataseaza dosarului de dauna.</div>
+    <div class="f2"><div class="f"><label>Tip comanda</label><select disabled><option>Asigurare</option></select></div>
+      <div class="f"><label>Platitor</label><select id="wo-payer"></select></div></div>
+    <div class="f2"><div class="f"><label>Atelier</label><select id="wo-ws"><option>Mecanica</option><option>Caroserie / Vopsitorie</option></select></div>
+      <div class="f"><label>Receptioner</label><select><option>Receptioner 1</option><option>Receptioner 2</option></select></div></div>
+    <div class="f"><label>Client / vehicul</label><select id="wo-client"></select></div>
+  </div>
+  <div class="modal-f"><button class="btn btn-secondary" onclick="closeModal('modal-wo')">Renunta</button><button class="btn btn-primary" onclick="createOrder()">✓ Creeaza comanda</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═════════════ DATA ═════════════ */
+const INSURERS=[
+ {n:'Groupama Asigurari',e:'daune-groupama@exemplu.ro',ap:2,p:15},
+ {n:'Allianz-Tiriac',e:'daune-allianz@exemplu.ro',ap:5,p:30},
+ {n:'Omniasig',e:'daune-omniasig@exemplu.ro',ap:5,p:30},
+ {n:'Generali',e:'daune-generali@exemplu.ro',ap:5,p:30},
+ {n:'Grawe',e:'daune-grawe@exemplu.ro',ap:3,p:15},
+ {n:'Asirom',e:'daune-asirom@exemplu.ro',ap:5,p:30},
+ {n:'Uniqa',e:'daune-uniqa@exemplu.ro',ap:5,p:30}];
+const DB_VEH=[
+ {plate:'B 123 VSP',vin:'ZAPMD3100P5001234',model:'Vespa GTS 300 Super',client:'Andrei Popa',phone:'07xx xxx 101',email:'andrei.popa@exemplu.ro',km:8420},
+ {plate:'B 77 BHB',vin:'ZAPTC1100N0004567',model:'Piaggio Beverly 400',client:'Ioana Marin',phone:'07xx xxx 202',email:'ioana.marin@exemplu.ro',km:15210},
+ {plate:'IF 09 APR',vin:'ZD4KZG00XRS002981',model:'Aprilia SR GT 200',client:'Curier Rapid SRL',phone:'07xx xxx 303',email:'flota@exemplu.ro',km:23100}];
+const ZONES={far:'Far / bloc optic',scut:'Scut fata / furca',ghidon:'Ghidon / oglinzi / manete',aripa_f:'Aripa fata',roata_f:'Roata fata / janta',lateral:'Carena laterala',sa:'Sa',aripa_s:'Aripa spate / stop',toba:'Toba / evacuare',roata_s:'Roata spate / janta'};
+const DTYPES=['Zgariat','Fisurat','Indoit','Ciobit / lipsa'];
+const PHOTO_CATS=[
+ {k:'vin',n:'Serie sasiu (VIN)',req:1},{k:'bord',n:'Bord / kilometraj',req:1},
+ {k:'fata',n:'Fata',req:1},{k:'spate',n:'Spate',req:1},{k:'stanga',n:'Lateral stanga',req:1},{k:'dreapta',n:'Lateral dreapta',req:1},
+ {k:'avarii',n:'Avarii (detaliu)',req:1},{k:'docs',n:'Documente (PV, constat, talon, CI)',req:0}];
+const CLAIM_ST=['Pre-dosar primit','Constatare initiala','Deviz trimis','Reconstatare','Accept plata','Piese comandate / in reparatie','Reparat & predat','Platit de asigurator'];
+const MAIL_TPL={
+ reconst:{n:'Solicitare reconstatare',st:3,body:'Buna ziua,\n\nVa rugam sa aprobati reconstatarea pentru dosarul {dosar}, vehicul {plate} ({model}). La demontare au fost identificate avarii suplimentare, documentate in pozele atasate.\n\nCu stima,\nService The Bike Hub'},
+ deviz:{n:'Trimitere deviz estimativ',st:2,body:'Buna ziua,\n\nVa transmitem devizul estimativ pentru dosarul {dosar}, vehicul {plate} ({model}), intocmit conform notei de constatare.\n\nCu stima,\nService The Bike Hub'},
+ accept:{n:'Solicitare accept plata',st:4,body:'Buna ziua,\n\nVa rugam sa ne transmiteti acceptul de plata pentru dosarul {dosar}, vehicul {plate}. Devizul final si pozele sunt atasate.\n\nCu stima,\nService The Bike Hub'},
+ final:{n:'Documente finale (factura, cerere despagubire)',st:7,body:'Buna ziua,\n\nVa transmitem documentele finale pentru dosarul {dosar}: factura, devizul final semnat si cererea de despagubire semnata de client.\n\nCu stima,\nService The Bike Hub'}};
+
+function svgPh(label,c){const s=`<svg xmlns='http://www.w3.org/2000/svg' width='240' height='180'><rect width='240' height='180' fill='${c}'/><g fill='rgba(255,255,255,.85)'><circle cx='120' cy='70' r='22'/><rect x='70' y='105' width='100' height='10' rx='5'/></g><text x='120' y='150' font-family='Arial' font-size='14' fill='white' text-anchor='middle'>${label}</text></svg>`;return 'data:image/svg+xml;utf8,'+encodeURIComponent(s);}
+const PCOL={vin:'#475569',bord:'#1B3A6B',fata:'#2563EB',spate:'#0EA5E9',stanga:'#6366F1',dreapta:'#8B5CF6',avarii:'#DC2626',docs:'#64748B'};
+function demoPhotos(n){const o={};PHOTO_CATS.forEach(c=>{o[c.k]=[];const cnt=c.k==='avarii'?n:(c.k==='docs'?1:1);for(let i=0;i<cnt;i++)o[c.k].push(svgPh(c.n.split(' ')[0]+(cnt>1?' '+(i+1):''),PCOL[c.k]));});return o;}
+
+let SEQ=44, WO=965676;
+const claims=[
+ {id:'PD-0043',received:'03.10.2026 08:52',user:'Receptioner 1',veh:DB_VEH[1],type:'RCA',insurer:'Groupama Asigurari',claimNo:'K2120196',policy:'RO/23/RCA/88213',eventDate:'2026-09-30',location:'Bucuresti, Sector 3',atFault:{name:'Popescu V.',plate:'B 456 XYZ',insurer:'Allianz-Tiriac'},notOpened:false,
+  damages:[{z:'aripa_f',t:'Fisurat'},{z:'far',t:'Ciobit / lipsa'},{z:'ghidon',t:'Indoit'}],km:15212,fuel:'3/8',rolling:'Da',photos:demoPhotos(3),
+  statement:'Clientul declara ca a fost lovit din fata-stanga la iesirea din sens giratoriu. Vehiculul a ramas pe roti. Nu au fost victime.',sig:true,status:'Nou',order:null,claimSt:0,emails:[],tl:[{t:'Pre-dosar primit din aplicatia mobila',d:'03.10.2026 08:52 · Receptioner 1'}]},
+ {id:'PD-0042',received:'02.10.2026 16:20',user:'Receptioner 2',veh:DB_VEH[2],type:'CASCO',insurer:'Omniasig',claimNo:'',policy:'CAS-552190',eventDate:'2026-10-01',location:'Otopeni',atFault:null,notOpened:true,
+  damages:[{z:'lateral',t:'Zgariat'},{z:'toba',t:'Indoit'}],km:23104,fuel:'5/8',rolling:'Da',photos:demoPhotos(2),
+  statement:'Alunecare pe carosabil umed, cadere pe partea dreapta. Dosarul nu este inca deschis la asigurator.',sig:true,status:'Nou',order:null,claimSt:0,emails:[],tl:[{t:'Pre-dosar primit din aplicatia mobila',d:'02.10.2026 16:20 · Receptioner 2'}]},
+ {id:'PD-0041',received:'29.09.2026 11:05',user:'Receptioner 1',veh:DB_VEH[0],type:'CASCO',insurer:'Grawe',claimNo:'GR-77810',policy:'GRW-CAS-1120',eventDate:'2026-09-27',location:'Bucuresti, Sector 1',atFault:null,notOpened:false,
+  damages:[{z:'aripa_s',t:'Fisurat'},{z:'sa',t:'Zgariat'}],km:8418,fuel:'6/8',rolling:'Da',photos:demoPhotos(2),
+  statement:'Vehicul lovit in parcare, in lipsa proprietarului.',sig:true,status:'Comanda creata',order:965661,claimSt:2,
+  emails:[{tpl:'Trimitere deviz estimativ',to:'daune-grawe@exemplu.ro',subj:'Dosar GR-77810 · B 123 VSP · Trimitere deviz estimativ',date:'30.09.2026 14:10',st:'Trimis',att:['Deviz estimativ.pdf','Poze (9)'],body:'Buna ziua,\n\nVa transmitem devizul estimativ…'}],
+  tl:[{t:'Pre-dosar primit din aplicatia mobila',d:'29.09.2026 11:05 · Receptioner 1'},{t:'Comanda de lucru #965661 creata (Asigurare)',d:'29.09.2026 11:30 · Receptioner 1'},{t:'Email trimis: Trimitere deviz estimativ',d:'30.09.2026 14:10'}]}
+];
+
+/* ═════════════ COMMON ═════════════ */
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
+function showView(v){document.getElementById('view-mobile').style.display=v==='mobile'?'flex':'none';document.getElementById('view-sp').style.display=v==='sp'?'block':'none';
+ document.getElementById('sw-m').classList.toggle('on',v==='mobile');document.getElementById('sw-s').classList.toggle('on',v==='sp');window.scrollTo(0,0);if(v==='sp'){renderInbox();}}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function nowStr(){const d=new Date(2026,9,3,9,41+Math.floor(Math.random()*10));return d.toLocaleDateString('ro-RO',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toTimeString().slice(0,5);}
+function fmtDate(s){if(!s)return '—';const [y,m,d]=s.split('-');return `${d}.${m}.${y}`;}
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function photoCount(p){return Object.values(p).reduce((a,b)=>a+b.length,0);}
+
+function motoSVG(damages,interactive,sel){
+ const hit=new Set(damages.map(d=>d.z));
+ const z=(k,shape)=>shape.replace('/>',` class="zone ${hit.has(k)?'hit':''} ${sel===k?'sel':''}" data-z="${k}" ${interactive?`onclick="mPickZone('${k}')"`:''}><title>${ZONES[k]}</title></${shape.match(/^<(\w+)/)[1]}>`);
+ return `<svg viewBox="0 0 400 230" xmlns="http://www.w3.org/2000/svg">
+  <text x="200" y="16" text-anchor="middle" font-size="11" fill="#94A3B8" font-family="DM Sans">Vedere laterala · apasati pe zona avariata</text>
+  ${z('roata_s','<circle cx="318" cy="170" r="42"/>')}
+  ${z('roata_f','<circle cx="82" cy="170" r="42"/>')}
+  <circle cx="318" cy="170" r="14" fill="#fff" stroke="#94A3B8" pointer-events="none"/><circle cx="82" cy="170" r="14" fill="#fff" stroke="#94A3B8" pointer-events="none"/>
+  ${z('toba','<rect x="240" y="150" width="88" height="16" rx="8"/>')}
+  ${z('aripa_f','<path d="M36 150 Q82 104 128 150 L116 150 Q82 120 48 150 Z"/>')}
+  ${z('scut','<polygon points="112,62 140,58 158,148 124,150"/>')}
+  ${z('lateral','<polygon points="150,104 262,98 292,150 156,150"/>')}
+  ${z('aripa_s','<polygon points="262,84 352,94 356,122 288,128"/>')}
+  ${z('sa','<rect x="176" y="80" width="98" height="20" rx="10"/>')}
+  ${z('ghidon','<rect x="96" y="36" width="70" height="14" rx="7"/>')}
+  ${z('far','<circle cx="118" cy="78" r="12"/>')}
+ </svg>`;}
+
+/* ═════════════ MOBILE APP ═════════════ */
+let mScreen='home', mStep=1, draft=null, mSelZone=null, sigDrawn=false;
+function newDraft(){return {veh:{plate:'',vin:'',model:'',client:'',phone:'',email:'',km:''},type:'RCA',insurer:'',claimNo:'',policy:'',eventDate:'2026-10-03',location:'',notOpened:false,atFault:{name:'',plate:'',insurer:''},damages:[],fuel:'',rolling:'Da',photos:Object.fromEntries(PHOTO_CATS.map(c=>[c.k,[]])),statement:'',gdpr:false};}
+function mRender(){
+ const H=document.getElementById('m-head'),B=document.getElementById('m-body'),F=document.getElementById('m-foot');
+ document.querySelectorAll('#flow .st').forEach(s=>s.classList.toggle('on',mScreen==='wiz'&&+s.dataset.s===mStep));
+ if(mScreen==='home'){
+  const mine=claims.slice(0,6);
+  H.innerHTML=`<div class="row"><div><h2>Pre-dosare daune</h2><div class="sub">Service · Locatia 1 · Receptioner 1</div></div><div class="brand-mark" style="width:36px;height:36px;">SP</div></div>`;
+  B.innerHTML=`<button class="m-fab" onclick="mStart()">+ Pre-dosar nou</button>
+   <div class="m-kpis"><div class="m-kpi"><b>${claims.filter(c=>c.status==='Nou').length}</b><span>In asteptare</span></div><div class="m-kpi"><b>${claims.filter(c=>c.order).length}</b><span>Comenzi create</span></div><div class="m-kpi"><b style="color:var(--green-700);">✓</b><span>Sincronizat</span></div></div>
+   <div style="font-size:12px;font-weight:700;color:var(--slate-400);text-transform:uppercase;letter-spacing:.6px;margin:4px 2px 8px;">Trimise recent</div>
+   ${mine.map(c=>`<div class="m-claim"><div><div class="t">${c.veh.plate} · ${c.veh.model}</div><div class="s">${c.id} · ${c.insurer} · ${c.type}</div><div class="s">${c.received}</div></div><div style="text-align:right;">${c.order?`<span class="badge b-green">Comanda #${c.order}</span>`:`<span class="badge b-blue">Primit in SP</span>`}</div></div>`).join('')}`;
+  F.innerHTML='';F.style.display='none';return;}
+ F.style.display='flex';
+ if(mScreen==='done'){
+  const c=claims[0];
+  H.innerHTML=`<div class="row"><div><h2>Trimis cu succes</h2><div class="sub">${c.id}</div></div></div>`;
+  B.innerHTML=`<div class="okbig">✓</div><div style="text-align:center;font-weight:700;font-size:16px;">Pre-dosarul ${c.id} a fost trimis in Sales Partner</div>
+   <div style="text-align:center;font-size:13px;color:var(--slate-500);margin:8px 18px 18px;">Il gasiti in Sales Partner › Daune › Pre-dosare. De acolo se creeaza comanda de lucru tip Asigurare.</div>
+   <div class="m-card"><div class="sum-row"><span>Vehicul</span><span>${esc(c.veh.plate)} · ${esc(c.veh.model)}</span></div><div class="sum-row"><span>Asigurator</span><span>${esc(c.insurer)} · ${c.type}</span></div><div class="sum-row"><span>Poze</span><span>${photoCount(c.photos)}</span></div><div class="sum-row"><span>Avarii</span><span>${c.damages.length}</span></div></div>`;
+  F.innerHTML=`<button class="btn btn-secondary" onclick="mScreen='home';mRender()">Lista</button><button class="btn btn-primary" onclick="showView('sp');openDetail('${c.id}')">Vezi in Sales Partner →</button>`;return;}
+ // wizard
+ const titles=['Client & vehicul','Dosar asigurare','Constatare','Poze','Declaratia clientului','Semnatura & trimitere'];
+ H.innerHTML=`<div class="row"><button class="m-back" onclick="mBack()">‹</button><div style="flex:1;margin-left:10px;"><h2 style="font-size:16px;">${titles[mStep-1]}</h2><div class="sub">Pasul ${mStep} din 6 · Pre-dosar nou</div></div></div>
+  <div class="m-steps">${[1,2,3,4,5,6].map(i=>`<span class="${i<mStep?'done':i===mStep?'cur':''}"></span>`).join('')}</div>`;
+ const d=draft;
+ if(mStep===1){
+  B.innerHTML=`<div class="m-card"><h4>Cautare in Sales Partner</h4>
+    <div class="f" style="display:flex;gap:6px;"><input id="q" placeholder="Nr. auto sau VIN" value="${esc(d.veh.plate)}"><button class="btn btn-primary" onclick="mSearch()">Cauta</button></div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="mOcr()">📷 Scaneaza talonul (completare automata)</button></div>
+   <div class="m-card"><h4>Vehicul</h4>
+    <div class="f2"><div class="f"><label>Nr. inmatriculare *</label><input value="${esc(d.veh.plate)}" oninput="draft.veh.plate=this.value"></div><div class="f"><label>Km *</label><input inputmode="numeric" value="${esc(d.veh.km)}" oninput="draft.veh.km=this.value"></div></div>
+    <div class="f"><label>Serie sasiu (VIN) *</label><input class="mono" value="${esc(d.veh.vin)}" oninput="draft.veh.vin=this.value"></div>
+    <div class="f"><label>Marca / model</label><input value="${esc(d.veh.model)}" oninput="draft.veh.model=this.value"></div></div>
+   <div class="m-card"><h4>Client</h4>
+    <div class="f"><label>Nume / denumire *</label><input value="${esc(d.veh.client)}" oninput="draft.veh.client=this.value"></div>
+    <div class="f2"><div class="f"><label>Telefon *</label><input value="${esc(d.veh.phone)}" oninput="draft.veh.phone=this.value"></div><div class="f"><label>Email</label><input value="${esc(d.veh.email)}" oninput="draft.veh.email=this.value"></div></div></div>`;}
+ if(mStep===2){
+  B.innerHTML=`<div class="m-card"><h4>Tip dosar</h4><div class="chips">${['RCA','CASCO'].map(t=>`<button class="chip ${d.type===t?'on':''}" onclick="draft.type='${t}';mRender()">${t}</button>`).join('')}</div></div>
+   <div class="m-card"><h4>Asigurator &amp; dosar</h4>
+    <div class="f"><label>Asigurator *</label><select onchange="draft.insurer=this.value"><option value="">Selectati…</option>${INSURERS.map(i=>`<option ${d.insurer===i.n?'selected':''}>${i.n}</option>`).join('')}</select></div>
+    <div class="f"><label>Nr. dosar dauna</label><input value="${esc(d.claimNo)}" ${d.notOpened?'disabled':''} oninput="draft.claimNo=this.value"></div>
+    <label style="display:flex;gap:8px;align-items:center;font-size:12px;margin-bottom:10px;"><input type="checkbox" ${d.notOpened?'checked':''} onchange="draft.notOpened=this.checked;mRender()"> Dosarul nu este inca deschis la asigurator</label>
+    <div class="f"><label>Nr. polita</label><input value="${esc(d.policy)}" oninput="draft.policy=this.value"></div>
+    <div class="f2"><div class="f"><label>Data eveniment *</label><input type="date" value="${d.eventDate}" oninput="draft.eventDate=this.value"></div><div class="f"><label>Locatie</label><input value="${esc(d.location)}" oninput="draft.location=this.value"></div></div></div>
+   ${d.type==='RCA'?`<div class="m-card"><h4>Parte vinovata (RCA)</h4>
+    <div class="f"><label>Nume</label><input value="${esc(d.atFault.name)}" oninput="draft.atFault.name=this.value"></div>
+    <div class="f2"><div class="f"><label>Nr. auto</label><input value="${esc(d.atFault.plate)}" oninput="draft.atFault.plate=this.value"></div><div class="f"><label>Asigurator RCA</label><select onchange="draft.atFault.insurer=this.value"><option value="">—</option>${INSURERS.map(i=>`<option ${d.atFault.insurer===i.n?'selected':''}>${i.n}</option>`).join('')}</select></div></div></div>`:''}`;}
+ if(mStep===3){
+  B.innerHTML=`<div class="m-card"><h4>Avarii vizibile</h4><div class="moto-wrap">${motoSVG(d.damages,true,mSelZone)}</div>
+    ${mSelZone?`<div style="margin-top:10px;font-size:12px;font-weight:700;">${ZONES[mSelZone]}</div><div class="chips" style="margin-top:6px;">${DTYPES.map(t=>`<button class="chip red ${d.damages.find(x=>x.z===mSelZone&&x.t===t)?'on':''}" onclick="mToggleDmg('${t}')">${t}</button>`).join('')}</div>`:'<div style="font-size:12px;color:var(--slate-400);margin-top:8px;">Selectati o zona pe schita.</div>'}
+    <div class="dmg-list" style="margin-top:10px;">${d.damages.map((x,i)=>`<div class="it"><span><b>${ZONES[x.z]}</b> · ${x.t}</span><button class="btn btn-ghost btn-xs" onclick="draft.damages.splice(${i},1);mRender()">✕</button></div>`).join('')||''}</div></div>
+   <div class="m-card"><h4>La receptie</h4>
+    <div class="f"><label>Nivel combustibil</label><div class="chips">${['1/8','2/8','3/8','4/8','5/8','6/8','7/8','8/8'].map(f=>`<button class="chip ${d.fuel===f?'on':''}" onclick="draft.fuel='${f}';mRender()">${f}</button>`).join('')}</div></div>
+    <div class="f"><label>Vehicul prezentat</label><div class="chips">${['Pe roti','Cu transport'].map((f,i)=>`<button class="chip ${d.rolling===(i?'Nu':'Da')?'on':''}" onclick="draft.rolling='${i?'Nu':'Da'}';mRender()">${f}</button>`).join('')}</div></div></div>`;}
+ if(mStep===4){
+  B.innerHTML=`<div style="font-size:12px;color:var(--slate-500);margin:0 2px 10px;">Pozele se fac direct cu camera telefonului. Categoriile cu * sunt obligatorii.</div>
+   <div class="ph-grid">${PHOTO_CATS.map(c=>{const n=d.photos[c.k].length;return `<div class="ph-tile ${n?'ok':''}"><div><div class="nm">${c.n}${c.req?' *':''}</div>${n?`<div class="ct">${n} poza${n>1?'e':''}</div>`:(c.req?'<div class="rq">obligatoriu</div>':'<div class="card-sub">optional</div>')}</div>
+    <div class="ph-thumbs">${d.photos[c.k].slice(0,4).map(u=>`<img src="${u}">`).join('')}</div>
+    <div class="ph-add"><label>📷<input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="mFile(event,'${c.k}')"></label><button onclick="mDemo('${c.k}')">+ demo</button></div></div>`;}).join('')}</div>`;}
+ if(mStep===5){
+  B.innerHTML=`<div class="m-card"><h4>Ce declara clientul</h4>
+    <div class="f"><textarea id="stmt" rows="8" placeholder="Descrierea evenimentului, cum s-a produs, ce avarii a observat clientul…" oninput="draft.statement=this.value">${esc(d.statement)}</textarea></div>
+    <button class="btn btn-secondary" style="width:100%;justify-content:center;" onclick="mDictate()">🎤 Dicteaza (vocal → text)</button></div>
+   <div class="m-card"><label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.45;"><input type="checkbox" ${d.gdpr?'checked':''} onchange="draft.gdpr=this.checked"> Clientul este de acord cu prelucrarea datelor si a pozelor in scopul instrumentarii dosarului de dauna.</label></div>`;}
+ if(mStep===6){
+  const pc=photoCount(d.photos);
+  B.innerHTML=`<div class="m-card"><h4>Rezumat</h4>
+    <div class="sum-row"><span>Client</span><span>${esc(d.veh.client)||'—'}</span></div>
+    <div class="sum-row"><span>Vehicul</span><span>${esc(d.veh.plate)} · ${esc(d.veh.model)}</span></div>
+    <div class="sum-row"><span>Dosar</span><span>${esc(d.insurer)||'—'} · ${d.type}${d.claimNo?' · '+esc(d.claimNo):d.notOpened?' · nedeschis':''}</span></div>
+    <div class="sum-row"><span>Avarii marcate</span><span>${d.damages.length}</span></div>
+    <div class="sum-row"><span>Poze</span><span>${pc}</span></div>
+    <div class="sum-row"><span>Km / combustibil</span><span>${esc(d.veh.km)||'—'} · ${d.fuel||'—'}</span></div></div>
+   <div class="m-card"><h4>Semnatura client</h4><canvas id="sig" class="sig"></canvas><div style="display:flex;justify-content:space-between;margin-top:6px;"><span class="card-sub">Clientul confirma datele si starea vehiculului</span><button class="btn btn-ghost btn-xs" onclick="sigClear()">Sterge</button></div></div>`;
+  setTimeout(sigInit,0);}
+ F.innerHTML=mStep<6?`<button class="btn btn-secondary" onclick="mBack()">Inapoi</button><button class="btn btn-primary" onclick="mNext()">Continua</button>`
+  :`<button class="btn btn-secondary" onclick="mBack()">Inapoi</button><button class="btn btn-success" onclick="mSend()">⇪ Trimite in Sales Partner</button>`;
+}
+function mStart(){draft=newDraft();mStep=1;mSelZone=null;mScreen='wiz';mRender();}
+function mBack(){if(mStep>1){mStep--;mRender();}else{mScreen='home';mRender();}}
+function mNext(){
+ const d=draft;
+ if(mStep===1&&(!d.veh.plate||!d.veh.vin||!d.veh.client)){toast('Completati nr. auto, VIN si clientul (sau folositi cautarea / scanarea).');return;}
+ if(mStep===2&&!d.insurer){toast('Selectati asiguratorul.');return;}
+ if(mStep===4){const miss=PHOTO_CATS.filter(c=>c.req&&!d.photos[c.k].length);if(miss.length){toast('Lipsesc poze: '+miss.map(m=>m.n).join(', '));return;}}
+ mStep++;mRender();document.getElementById('m-body').scrollTop=0;}
+function mSearch(){const q=(document.getElementById('q').value||'').replace(/\s/g,'').toUpperCase();const v=DB_VEH.find(x=>x.plate.replace(/\s/g,'')===q||x.vin===q)||DB_VEH[0];
+ draft.veh={...v,km:String(v.km+12)};toast('Gasit in Sales Partner: '+v.client+' · '+v.model);mRender();}
+function mOcr(){const v=DB_VEH[Math.floor(Math.random()*DB_VEH.length)];draft.veh={...v,km:''};toast('Talon citit: '+v.plate+' · '+v.vin);mRender();}
+function mPickZone(z){mSelZone=z;mRender();}
+function mToggleDmg(t){const i=draft.damages.findIndex(x=>x.z===mSelZone&&x.t===t);if(i>=0)draft.damages.splice(i,1);else draft.damages.push({z:mSelZone,t});mRender();}
+function mFile(e,k){[...e.target.files].forEach(f=>{const r=new FileReader();r.onload=()=>{draft.photos[k].push(r.result);mRender();};r.readAsDataURL(f);});}
+function mDemo(k){const c=PHOTO_CATS.find(x=>x.k===k);draft.photos[k].push(svgPh(c.n.split(' ')[0]+' '+(draft.photos[k].length+1),PCOL[k]));mRender();}
+function mDictate(){const t='Clientul declara ca in timp ce stationa la semafor a fost lovit din spate de un autoturism. Avarii la aripa spate si stop. Vehiculul se deplaseaza pe roti.';draft.statement=(draft.statement?draft.statement+' ':'')+t;toast('Text dictat adaugat');mRender();}
+let sigCtx=null;
+function sigInit(){const c=document.getElementById('sig');if(!c)return;c.width=c.clientWidth;c.height=150;sigCtx=c.getContext('2d');sigCtx.lineWidth=2.2;sigCtx.lineCap='round';sigCtx.strokeStyle='#0F172A';sigDrawn=false;let dn=false;
+ const pos=e=>{const r=c.getBoundingClientRect();const p=e.touches?e.touches[0]:e;return [p.clientX-r.left,p.clientY-r.top];};
+ const st=e=>{dn=true;const [x,y]=pos(e);sigCtx.beginPath();sigCtx.moveTo(x,y);e.preventDefault();};
+ const mv=e=>{if(!dn)return;const [x,y]=pos(e);sigCtx.lineTo(x,y);sigCtx.stroke();sigDrawn=true;e.preventDefault();};
+ const en=()=>dn=false;
+ c.onmousedown=st;c.onmousemove=mv;window.addEventListener('mouseup',en);c.ontouchstart=st;c.ontouchmove=mv;c.ontouchend=en;}
+function sigClear(){const c=document.getElementById('sig');sigCtx.clearRect(0,0,c.width,c.height);sigDrawn=false;}
+function mSend(){
+ if(!sigDrawn){toast('Lipseste semnatura clientului.');return;}
+ const sig=document.getElementById('sig').toDataURL();
+ document.getElementById('sending').classList.add('show');
+ setTimeout(()=>{
+  const d=draft,id='PD-00'+(SEQ++);const rec=nowStr();
+  claims.unshift({id,received:rec,user:'Receptioner 1',veh:{...d.veh,km:d.veh.km},type:d.type,insurer:d.insurer,claimNo:d.notOpened?'':d.claimNo,policy:d.policy,eventDate:d.eventDate,location:d.location,
+   atFault:d.type==='RCA'&&d.atFault.name?{...d.atFault}:null,notOpened:d.notOpened,damages:[...d.damages],km:d.veh.km,fuel:d.fuel,rolling:d.rolling,photos:d.photos,statement:d.statement,sig,sigImg:sig,
+   status:'Nou',order:null,claimSt:0,emails:[],tl:[{t:'Pre-dosar primit din aplicatia mobila',d:rec+' · Receptioner 1'}]});
+  document.getElementById('sending').classList.remove('show');mScreen='done';mRender();updBadge();toast(id+' trimis in Sales Partner');
+ },1400);}
+
+/* ═════════════ SALES PARTNER ═════════════ */
+let curId=null;
+function updBadge(){document.getElementById('nb-new').textContent=claims.filter(c=>c.status==='Nou').length;}
+function spNav(k){document.querySelectorAll('.sp-screen').forEach(s=>s.classList.remove('on'));document.getElementById('sp-'+k).classList.add('on');
+ document.querySelectorAll('.sp-item[data-k]').forEach(i=>i.classList.toggle('on',i.dataset.k===k||(k==='detail'&&i.dataset.k==='inbox')));
+ if(k==='inbox')renderInbox();if(k==='claims')renderClaims();if(k==='settings')renderSettings();window.scrollTo(0,0);}
+function stBadge(s){return s==='Nou'?'<span class="badge b-blue">● Nou</span>':s==='Comanda creata'?'<span class="badge b-green">✓ Comanda creata</span>':'<span class="badge b-red">Respins</span>';}
+function renderInbox(){
+ updBadge();const f=document.getElementById('in-filter').value;
+ document.getElementById('in-metrics').innerHTML=`
+  <div class="metric"><div class="l">Pre-dosare noi</div><div class="v">${claims.filter(c=>c.status==='Nou').length}</div><div class="s">De preluat</div></div>
+  <div class="metric g"><div class="l">Transformate in comenzi</div><div class="v">${claims.filter(c=>c.order).length}</div><div class="s">Luna curenta</div></div>
+  <div class="metric a"><div class="l">Timp mediu preluare</div><div class="v">38 min</div><div class="s">De la primire la comanda</div></div>
+  <div class="metric"><div class="l">Dispozitive active</div><div class="v">2 / 3</div><div class="s">Licenta Sales Partner Claims</div></div>`;
+ document.getElementById('in-rows').innerHTML=claims.filter(c=>!f||c.status===f).map(c=>`<tr class="click" onclick="openDetail('${c.id}')">
+  <td><span class="idlink">${c.id}</span></td><td class="mono" style="font-size:11.5px;">${c.received}</td><td>${c.user}</td><td style="font-weight:600;">${esc(c.veh.client)}</td>
+  <td class="mono">${esc(c.veh.plate)}</td><td>${esc(c.veh.model)}</td><td>${esc(c.insurer)}</td><td><span class="badge ${c.type==='RCA'?'b-purple':'b-amber'}">${c.type}</span></td>
+  <td class="mono">${c.claimNo?esc(c.claimNo):(c.notOpened?'<span class="badge b-slate">nedeschis</span>':'—')}</td><td>📷 ${photoCount(c.photos)}</td><td>${stBadge(c.status)}</td>
+  <td>${c.order?`<span class="idlink">#${c.order}</span>`:'<button class="btn btn-primary btn-xs">Deschide</button>'}</td></tr>`).join('');}
+
+function openDetail(id){curId=id;spNav('detail');renderDetail();}
+function renderDetail(tab){
+ const c=claims.find(x=>x.id===curId);const el=document.getElementById('sp-detail');tab=tab||el.dataset.tab||'const';el.dataset.tab=tab;
+ const ins=INSURERS.find(i=>i.n===c.insurer)||{};
+ el.innerHTML=`
+ <div class="page-h"><div><div class="crumb"><a onclick="spNav('inbox')">Pre-dosare</a> / ${c.id}</div><div class="page-t">${c.id} · ${esc(c.veh.plate)} · ${esc(c.veh.model)}</div>
+   <div class="page-s">Primit ${c.received} din aplicatia mobila · ${c.user}</div></div>
+  <div style="display:flex;gap:8px;">${c.status==='Nou'?`<button class="btn btn-danger btn-sm" onclick="rejectPD()">Respinge</button><button class="btn btn-primary btn-sm" onclick="openWO()">＋ Creeaza comanda de lucru</button>`
+   :c.order?`<button class="btn btn-secondary btn-sm" onclick="toast('Deschide comanda #${c.order} in Comenzi service')">Comanda #${c.order} →</button>`:''}</div></div>
+ ${c.order?`<div class="pipe">${CLAIM_ST.map((s,i)=>`<div class="p ${i<c.claimSt?'done':i===c.claimSt?'cur':''}" onclick="setClaimSt(${i})" style="cursor:pointer;"><div class="c">${i<c.claimSt?'✓':i+1}</div><div class="tx">${s}</div></div>`).join('')}</div>`
+  :`<div class="note">Pre-dosarul nu este inca asociat unei comenzi. Dupa <b>Creeaza comanda de lucru</b>, dosarul de dauna se ataseaza comenzii si se urmareste pe statusuri.</div>`}
+ <div class="grid-d"><div>
+  <div class="card" style="margin-bottom:14px;"><div class="card-title" style="margin-bottom:8px;">Client &amp; vehicul</div>
+   <div class="info-row"><span class="info-label">Client</span><span class="info-val">${esc(c.veh.client)}</span></div>
+   <div class="info-row"><span class="info-label">Telefon</span><span class="info-val">${esc(c.veh.phone)}</span></div>
+   <div class="info-row"><span class="info-label">Email</span><span class="info-val">${esc(c.veh.email)||'—'}</span></div>
+   <div class="info-row"><span class="info-label">Nr. auto</span><span class="info-val mono">${esc(c.veh.plate)}</span></div>
+   <div class="info-row"><span class="info-label">VIN</span><span class="info-val mono" style="font-size:11px;">${esc(c.veh.vin)}</span></div>
+   <div class="info-row"><span class="info-label">Km / combustibil</span><span class="info-val">${esc(c.km)} · ${c.fuel||'—'}</span></div>
+   <div class="info-row"><span class="info-label">Prezentat</span><span class="info-val">${c.rolling==='Da'?'Pe roti':'Cu transport'}</span></div></div>
+  <div class="card"><div class="card-title" style="margin-bottom:8px;">Dosar de dauna</div>
+   <div class="info-row"><span class="info-label">Asigurator</span><span class="info-val">${esc(c.insurer)}</span></div>
+   <div class="info-row"><span class="info-label">Tip</span><span class="info-val">${c.type}</span></div>
+   <div class="info-row"><span class="info-label">Nr. dosar</span><span class="info-val mono">${c.claimNo?esc(c.claimNo):(c.notOpened?'<span class="badge b-slate">nedeschis</span>':'—')}</span></div>
+   <div class="info-row"><span class="info-label">Polita</span><span class="info-val mono">${esc(c.policy)||'—'}</span></div>
+   <div class="info-row"><span class="info-label">Data eveniment</span><span class="info-val">${fmtDate(c.eventDate)}</span></div>
+   <div class="info-row"><span class="info-label">Locatie</span><span class="info-val">${esc(c.location)||'—'}</span></div>
+   ${c.atFault?`<div class="info-row"><span class="info-label">Parte vinovata</span><span class="info-val">${esc(c.atFault.name)} · ${esc(c.atFault.plate)}<br><span style="font-size:11px;color:var(--slate-400);">${esc(c.atFault.insurer)}</span></span></div>`:''}
+   <div class="info-row"><span class="info-label">Termene ${esc(c.insurer)}</span><span class="info-val">Accept plata ${ins.ap||'—'} zile · plata ${ins.p||'—'} zile</span></div></div>
+ </div><div>
+  <div class="tabs">${[['const','Constatare'],['poze','Poze ('+photoCount(c.photos)+')'],['decl','Declaratie client'],['mail','Corespondenta asigurator ('+c.emails.length+')'],['ist','Istoric']].map(([k,n])=>`<div class="tab ${tab===k?'on':''}" onclick="renderDetail('${k}')">${n}</div>`).join('')}</div>
+  <div class="pane ${tab==='const'?'on':''}"><div style="display:grid;grid-template-columns:1.1fr 1fr;gap:16px;">
+    <div class="card"><div class="card-title" style="margin-bottom:6px;">Schita avarii (din aplicatia mobila)</div><div class="moto-wrap">${motoSVG(c.damages,false,null)}</div></div>
+    <div class="card"><div class="card-title" style="margin-bottom:8px;">Avarii vizibile la receptie</div>
+     <table><thead><tr><th>Zona</th><th>Tip avarie</th></tr></thead><tbody>${c.damages.map(d=>`<tr><td>${ZONES[d.z]}</td><td><span class="badge b-red">${d.t}</span></td></tr>`).join('')||'<tr><td colspan="2" class="card-sub">Fara avarii marcate</td></tr>'}</tbody></table>
+     <div class="card-sub" style="margin-top:10px;">Constatarea de la receptie nu inlocuieste nota de constatare a asiguratorului; aceasta se ataseaza la Documente.</div></div></div></div>
+  <div class="pane ${tab==='poze'?'on':''}">${PHOTO_CATS.filter(pc=>c.photos[pc.k].length).map(pc=>`<div style="font-size:12px;font-weight:700;color:var(--slate-500);margin:4px 0 8px;">${pc.n}</div><div class="gal" style="margin-bottom:14px;">${c.photos[pc.k].map((u,i)=>`<figure><img src="${u}"><figcaption>${pc.n.split(' (')[0]} ${i+1}</figcaption></figure>`).join('')}</div>`).join('')}</div>
+  <div class="pane ${tab==='decl'?'on':''}"><div class="card"><div class="card-title" style="margin-bottom:8px;">Declaratia clientului</div><div style="font-size:13px;line-height:1.6;color:var(--slate-700);">${esc(c.statement)||'<span class="card-sub">Fara declaratie</span>'}</div>
+   <div style="margin-top:14px;font-size:11px;color:var(--slate-400);">Semnatura client</div>${c.sigImg?`<img src="${c.sigImg}" style="max-width:280px;border:1px solid var(--slate-200);border-radius:8px;margin-top:4px;">`:`<div style="font-family:cursive;font-size:22px;color:var(--slate-700);margin-top:4px;">${esc(c.veh.client.split(' ')[0])}</div>`}</div></div>
+  <div class="pane ${tab==='mail'?'on':''}">${c.order?composeHTML(c,ins):`<div class="note">Corespondenta cu asiguratorul se trimite din Sales Partner dupa crearea comenzii, pentru ca fiecare email sa fie urmarit pe dosar.</div>`}
+   ${c.emails.slice().reverse().map(m=>`<div class="mail"><div class="hd"><div><div class="sb">${esc(m.subj)}</div><div class="meta">Catre ${esc(m.to)} · ${m.date}</div></div><span class="badge ${m.st==='Trimis'?'b-blue':'b-green'}">${m.st}</span></div>
+    <div class="bd">${esc(m.body)}</div><div>${m.att.map(a=>`<span class="att">📎 ${esc(a)}</span>`).join('')}</div></div>`).join('')}</div>
+  <div class="pane ${tab==='ist'?'on':''}"><div class="card"><div class="tl">${c.tl.slice().reverse().map(t=>`<div class="i"><b>${esc(t.t)}</b><span>${esc(t.d)}</span></div>`).join('')}</div></div></div>
+ </div></div>`;}
+function composeHTML(c,ins){const tk=document.getElementById('sp-detail').dataset.tpl||'deviz';const t=MAIL_TPL[tk];
+ const body=t.body.replace('{dosar}',c.claimNo||'(nr. dosar)').replace('{plate}',c.veh.plate).replace('{model}',c.veh.model);
+ return `<div class="card compose" style="margin-bottom:14px;"><div class="card-title" style="margin-bottom:10px;">Email nou catre asigurator</div>
+  <div class="f2"><div class="f"><label>Sablon</label><select onchange="document.getElementById('sp-detail').dataset.tpl=this.value;renderDetail('mail')">${Object.entries(MAIL_TPL).map(([k,v])=>`<option value="${k}" ${k===tk?'selected':''}>${v.n}</option>`).join('')}</select></div>
+   <div class="f"><label>Catre</label><input id="ml-to" value="${esc(ins.e||'')}"></div></div>
+  <div class="f"><label>Subiect</label><input id="ml-subj" value="Dosar ${esc(c.claimNo||'(nr. dosar)')} · ${esc(c.veh.plate)} · ${t.n}"></div>
+  <div class="f"><label>Mesaj</label><textarea id="ml-body" rows="5">${esc(body)}</textarea></div>
+  <div class="f"><label>Atasamente</label><div class="chips">${['Poze ('+photoCount(c.photos)+')','Nota constatare.pdf','Deviz.pdf','Cerere despagubire.pdf','Factura.pdf'].map((a,i)=>`<label class="chip ${i<2?'on':''}" style="cursor:pointer;"><input type="checkbox" ${i<2?'checked':''} style="display:none" onchange="this.parentNode.classList.toggle('on',this.checked)" data-a="${a}">${a}</label>`).join('')}</div></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;"><span class="card-sub">Trimis din Sales Partner · salvat pe dosar · status dosar actualizat</span><button class="btn btn-primary btn-sm" onclick="sendMail('${tk}')">✉ Trimite</button></div></div>`;}
+function sendMail(tk){const c=claims.find(x=>x.id===curId);const att=[...document.querySelectorAll('.compose input[data-a]:checked')].map(i=>i.dataset.a);const d=nowStr();
+ c.emails.push({tpl:MAIL_TPL[tk].n,to:document.getElementById('ml-to').value,subj:document.getElementById('ml-subj').value,date:d,st:'Trimis',att,body:document.getElementById('ml-body').value});
+ c.tl.push({t:'Email trimis: '+MAIL_TPL[tk].n,d});if(MAIL_TPL[tk].st>c.claimSt){c.claimSt=MAIL_TPL[tk].st;c.tl.push({t:'Status dosar: '+CLAIM_ST[c.claimSt],d});}
+ toast('Email trimis catre asigurator si salvat pe dosar');renderDetail('mail');}
+function setClaimSt(i){const c=claims.find(x=>x.id===curId);c.claimSt=i;c.tl.push({t:'Status dosar: '+CLAIM_ST[i],d:nowStr()});renderDetail();toast('Status dosar: '+CLAIM_ST[i]);}
+function openWO(){const c=claims.find(x=>x.id===curId);
+ document.getElementById('wo-payer').innerHTML=`<option>${esc(c.insurer)} (asigurator)</option><option>${esc(c.veh.client)} (client)</option>`;
+ document.getElementById('wo-client').innerHTML=`<option>${esc(c.veh.client)} · ${esc(c.veh.plate)} · ${esc(c.veh.model)} (existent in Sales Partner)</option><option>Creeaza client / vehicul nou din datele pre-dosarului</option>`;
+ document.getElementById('wo-ws').value=c.damages.some(d=>['lateral','aripa_f','aripa_s','sa','scut'].includes(d.z))?'Caroserie / Vopsitorie':'Mecanica';
+ document.getElementById('modal-wo').classList.add('show');}
+function createOrder(){const c=claims.find(x=>x.id===curId);c.order=WO++;c.status='Comanda creata';c.claimSt=Math.max(c.claimSt,c.claimNo?1:0);const d=nowStr();
+ c.tl.push({t:`Comanda de lucru #${c.order} creata (Asigurare) · dosar atasat`,d:d+' · Receptioner 1'});closeModal('modal-wo');toast('Comanda #'+c.order+' creata · dosarul de dauna a fost atasat');renderDetail('const');updBadge();}
+function rejectPD(){const c=claims.find(x=>x.id===curId);c.status='Respins';c.tl.push({t:'Pre-dosar respins',d:nowStr()});toast(c.id+' respins');renderDetail();updBadge();}
+function renderClaims(){const list=claims.filter(c=>c.order);
+ document.getElementById('cl-metrics').innerHTML=`
+  <div class="metric"><div class="l">Dosare deschise</div><div class="v">${list.filter(c=>c.claimSt<7).length}</div><div class="s">Cu comanda de lucru</div></div>
+  <div class="metric a"><div class="l">Asteapta raspuns asigurator</div><div class="v">${list.filter(c=>[2,3].includes(c.claimSt)).length}</div><div class="s">Deviz / reconstatare</div></div>
+  <div class="metric r"><div class="l">Termen depasit</div><div class="v">${list.filter(c=>c.claimSt===2).length}</div><div class="s">Fata de termenele asiguratorului</div></div>
+  <div class="metric g"><div class="l">Platite (luna)</div><div class="v">${list.filter(c=>c.claimSt===7).length}</div><div class="s">Dosare inchise</div></div>`;
+ document.getElementById('cl-rows').innerHTML=list.map(c=>{const ins=INSURERS.find(i=>i.n===c.insurer)||{};const late=c.claimSt===2;const last=c.emails[c.emails.length-1];
+  return `<tr class="click" onclick="openDetail('${c.id}')"><td class="mono">${c.claimNo?esc(c.claimNo):c.id}</td><td><span class="idlink">#${c.order}</span></td><td>${esc(c.veh.client)}</td><td class="mono">${esc(c.veh.plate)}</td><td>${esc(c.insurer)}</td>
+  <td><span class="badge ${c.type==='RCA'?'b-purple':'b-amber'}">${c.type}</span></td><td><span class="badge b-blue">${CLAIM_ST[c.claimSt]}</span></td><td>${late?'3 zile':'0 zile'}</td>
+  <td style="font-size:11.5px;">${last?esc(last.tpl)+'<br><span class="card-sub">'+last.date+'</span>':'—'}</td><td>${late?`<span class="warn">Depasit (${ins.ap} zile)</span>`:'<span class="badge b-green">In termen</span>'}</td></tr>`;}).join('')||'<tr><td colspan="10" class="card-sub">Niciun dosar cu comanda</td></tr>';}
+function renderSettings(){
+ document.getElementById('ins-rows').innerHTML=INSURERS.map(i=>`<tr><td>${i.n}</td><td class="mono" style="font-size:11.5px;">${i.e}</td><td>${i.ap} zile</td><td>${i.p} zile</td></tr>`).join('');
+ document.getElementById('api-sample').textContent=JSON.stringify({source:"sp-claims-mobile",device_id:"TAB-RECEPTIE-01",user:"receptioner1",workplace_id:"LOC1",
+  customer:{name:"Ioana Marin",phone:"07xx xxx 202",email:"ioana.marin@exemplu.ro"},
+  vehicle:{plate:"B 77 BHB",vin:"ZAPTC1100N0004567",model:"Piaggio Beverly 400",km:15212,fuel:"3/8",rolling:true},
+  claim:{type:"RCA",insurer:"Groupama Asigurari",claim_no:"K2120196",policy_no:"RO/23/RCA/88213",event_date:"2026-09-30",location:"Bucuresti, Sector 3",
+   at_fault:{name:"Popescu V.",plate:"B 456 XYZ",insurer:"Allianz-Tiriac"}},
+  damages:[{zone:"aripa_f",type:"Fisurat"},{zone:"far",type:"Ciobit / lipsa"}],
+  statement:"Clientul declara ca a fost lovit din fata-stanga…",gdpr_consent:true,
+  signature:"<base64 png>",photos:[{category:"vin",upload_id:"ph_9f21"},{category:"avarii",upload_id:"ph_9f22"}]},null,2)
+  +"\n\n→ 201 Created  { \"pre_claim_id\": \"PD-0043\", \"status\": \"Nou\" }";}
+
+/* init */
+mRender();updBadge();
+</script>
+</body>
+</html>
