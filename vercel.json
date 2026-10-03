@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/SalesPartner_Claims_Mobile_POC_v1.html" }
+  ]
+}
